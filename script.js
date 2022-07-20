@@ -1,12 +1,47 @@
 const form = document.querySelector("form");
+const left = document.getElementById("left");
+const rigth = document.getElementById("rigth");
+let pokemonId = null
 
 const URL = "https://pokeapi.co/api/v2/pokemon/";
 
+
+left.addEventListener('click', (e) => getPokemon(pokemonId - 1));
+rigth.addEventListener('click', (e) => getPokemon(pokemonId + 1));
+
+function getPokemon(params) {
+    const response = document.getElementById("content");
+    const image = document.getElementById("imgPokemon");
+    const pokemon = document.getElementById("pokemonId");
+
+    fetch(URL + params)
+    .then(resp => resp.json())
+    .then(resp => {
+        response.innerHTML = buildHtml(resp);
+        image.innerHTML = buildImg(resp);
+        pokemon.innerHTML = resp.id;
+        pokemonId = resp.id;
+    })
+    .catch(err => {
+        let text;
+        
+        if (err == "SyntaxError: Unexpected token N in JSON at position 0") {
+            text = "Pokémon não encontrado!";
+        } else {
+            console.log(err)
+            text = "Erro!";
+        }
+
+        response.innerHTML = text;
+        image.innerHTML = "";
+        pokemon.innerHTML = "0";
+        pokemonId = 0;
+    })
+}
+
 form.addEventListener("submit", (e) => {
     e.preventDefault();
-    let name = document.getElementById("name");
-    let response = document.getElementById("content");
-    let image = document.getElementById("imgPokemon");
+    const name = document.getElementById("name");
 
     if (name.value === ""){
         response.innerHTML = "...";
@@ -14,25 +49,7 @@ form.addEventListener("submit", (e) => {
         return 0
     }
     
-    fetch(URL + name.value.toLocaleLowerCase())
-        .then(resp => resp.json())
-        .then(resp => {
-            response.innerHTML = buildHtml(resp);
-            image.innerHTML = buildImg(resp);
-        })
-        .catch(err => {
-            let text;
-            
-            if (err == "SyntaxError: Unexpected token N in JSON at position 0") {
-                text = "Pokémon não encontrado!";
-            } else {
-                console.log(err)
-                text = "Erro!";
-            }
-
-            response.innerHTML = text;
-            image.innerHTML = "";
-        })
+    getPokemon(name.value.toLocaleLowerCase())
 })
 
 function buildHtml(data) {
